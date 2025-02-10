@@ -1,0 +1,88 @@
+# # Create deepseek namespace yaml
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: deepseek
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepseek-qwen-32b
+  namespace: deepseek
+  labels:
+    app: deepseek-qwen-32b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepseek-qwen-32b
+  template:
+    metadata:
+      labels:
+        app: deepseek-qwen-32b
+    spec:
+      nodeSelector:
+        owner: data-engineer
+        node.kubernetes.io/instance-type: g6e.12xlarge
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      volumes:
+      - name: cache-volume
+        hostPath:
+          path: /tmp/deepseek
+          type: DirectoryOrCreate
+      # vLLM needs to access the host's shared memory for tensor parallel inference.
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "4Gi"
+      containers:
+      - name: deepseek
+        image: vllm/vllm-openai:latest
+        command: [ "/bin/sh", "-c" ]
+        args: [ "vllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --tensor-parallel-size 2 --max-model-len 32768 --enforce-eager" ]
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "32"
+            memory: 100G
+            nvidia.com/gpu: "2"
+          requests:
+            cpu: "32"
+            memory: 100G
+            nvidia.com/gpu: "2"
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: cache-volume
+        - name: shm
+          mountPath: /dev/shm
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepseek-svc-qwen-32b
+  namespace: deepseek
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: deepseek-qwen-32b
+  type: ClusterIP
