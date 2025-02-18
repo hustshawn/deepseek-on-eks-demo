@@ -1,28 +1,29 @@
-# # Create deepseek namespace yaml
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: deepseek
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepseek-deployment
+  name: deepseek-qwen-32b-vllm
   namespace: deepseek
   labels:
-    app: deepseek
+    app: deepseek-qwen-32b
+    engine: vllm
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: deepseek
+      app: deepseek-qwen-32b
+      engine: vllm
   template:
     metadata:
       labels:
-        app: deepseek
+        app: deepseek-qwen-32b
+        engine: vllm
     spec:
+      priorityClassName: high-priority-100
       nodeSelector:
         owner: data-engineer
+        node.kubernetes.io/instance-type: g6e.12xlarge # 4 L40S GPU, 192G GPU Memory
       tolerations:
       - key: "nvidia.com/gpu"
         operator: "Exists"
@@ -36,23 +37,24 @@ spec:
       - name: shm
         emptyDir:
           medium: Memory
-          sizeLimit: "2Gi"
+          sizeLimit: "4Gi"
       containers:
       - name: deepseek
         image: vllm/vllm-openai:latest
         command: [ "/bin/sh", "-c" ]
-        args: [ "vllm serve deepseek-ai/DeepSeek-R1-Distill-Llama-8B --max_model 2048" ]
+        args: [ "vllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --tensor-parallel-size 2 --max-model-len 32768 --enforce-eager" ]
         ports:
-        - containerPort: 8000
+        - name: http
+          containerPort: 8000
         resources:
           limits:
             cpu: "32"
             memory: 100G
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: "2"
           requests:
-            cpu: "16"
-            memory: 30G
-            nvidia.com/gpu: "1"
+            cpu: "20"
+            memory: 100G
+            nvidia.com/gpu: "2"
         volumeMounts:
         - mountPath: /root/.cache/huggingface
           name: cache-volume
@@ -74,15 +76,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepseek-svc
+  name: deepseek-svc-qwen-32b-vllm
   namespace: deepseek
 spec:
   ports:
   - name: http
     port: 80
     protocol: TCP
-    targetPort: 8000
-  # The label selector should match the deployment labels & it is useful for prefix caching feature
+    targetPort: http
   selector:
-    app: deepseek
+    app: deepseek-qwen-32b
+    engine: vllm
   type: ClusterIP
