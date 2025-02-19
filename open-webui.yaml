@@ -1,10 +1,4 @@
 # https://raw.githubusercontent.com/awslabs/data-on-eks/refs/heads/main/gen-ai/inference/vllm-ray-gpu-deepseek/open-webui.yaml
-# ---
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: deepseek
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -89,13 +89,39 @@ This project demonstrates the deployment and management of DeepSeek AI models on
 
 ```text
 .
-├── deployment.yaml
+├── deepseek-using-vllm-on-eks
+│   ├── chatbot-ui
+│   │   ├── application
+│   │   │   ├── app.py
+│   │   │   ├── Dockerfile
+│   │   │   └── requirements.txt
+│   │   └── manifests
+│   │       ├── deployment.yaml
+│   │       └── ingress-class.yaml
+│   ├── CODE_OF_CONDUCT.md
+│   ├── CONTRIBUTING.md
+│   ├── main.tf
+│   ├── manifests
+│   │   ├── deepseek-deployment-gpu.yaml
+│   │   └── gpu-nodepool.yaml
+│   └── README.md
+├── ec2nodepool.yaml
 ├── genai-perf.yaml
+├── k8s-manifest
+│   ├── genai-perf
+│   │   ├── genai-perf-2409.yaml
+│   │   └── genai-perf-2412.yaml
+│   ├── priority-class.yaml
+│   ├── sglang
+│   │   ├── llama-8b-sglang.yaml
+│   │   └── qwen-32b-sglang.yaml
+│   └── vllm
+│       ├── llama-8b-vllm.yaml
+│       ├── qwen-14b-deployment.yaml
+│       └── qwen-32b-deployment.yaml
 ├── nodepool.yaml
 ├── open-webui.yaml
 ├── prompts.sh
-├── qwen-14b-deployment.yaml
-├── qwen-32b-deployment.yaml
 └── README.md
 ```
 
