@@ -7,7 +7,7 @@ spec:
     budgets:
     - nodes: 10%
     consolidateAfter: 30s
-    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidationPolicy: WhenEmpty
   template:
     metadata:
       labels:

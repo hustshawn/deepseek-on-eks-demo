@@ -32,11 +32,11 @@ spec:
       - name: deepsek
         image: docker.io/lmsysorg/sglang:latest
         imagePullPolicy: Always # IfNotPresent or Never
+        command: [ "python3", "-m", "sglang.launch_server" ]
+        args: [ "--model", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "--host", "0.0.0.0", "--port", "8000" ]
         ports:
         - name: http
           containerPort: 8000
-        command: [ "python3", "-m", "sglang.launch_server" ]
-        args: [ "--model", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", "--host", "0.0.0.0", "--port", "8000" ]
         resources:
           limits:
             cpu: "32"
@@ -46,15 +46,15 @@ spec:
             cpu: "16"
             memory: 30G
             nvidia.com/gpu: "1"
-        volumeMounts:
-        - mountPath: /root/.cache/huggingface
-          name: cache-volume
         livenessProbe:
           httpGet:
             path: /health
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: cache-volume
       volumes:
       - name: cache-volume
         hostPath:
