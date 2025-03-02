@@ -24,7 +24,7 @@ spec:
       requirements:
       - key: "eks.amazonaws.com/instance-family"
         operator: In
-        values: [ "g5", "g6", "g6e", "p5", "p4" ]
+        values: [ "g5", "g6", "g6e", "p4", "p4d", "p5", "p5en" ]
       - key: "kubernetes.io/arch"
         operator: In
         values: [ "amd64" ]
@@ -33,7 +33,7 @@ spec:
         values: [ "spot", "on-demand" ]
   limits:
     cpu: "1000"
-    memory: 1000Gi
+    # memory: 1000Gi
 ---
 
 apiVersion: karpenter.sh/v1

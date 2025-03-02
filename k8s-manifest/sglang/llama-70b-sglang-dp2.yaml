@@ -24,7 +24,7 @@ spec:
       priorityClassName: high-priority-100
       nodeSelector:
         owner: data-engineer
-        node.kubernetes.io/instance-type: g6e.12xlarge
+        node.kubernetes.io/instance-type: g6e.48xlarge # L40S, 8 * 48GB
       tolerations:
       - key: "nvidia.com/gpu"
         operator: "Exists"
@@ -38,18 +38,23 @@ spec:
           "--model-path", "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
           "--host", "0.0.0.0",
           "--port", "8000",
-          "--context-length", "32768",
+          "--context-length", "8192",
           "--tensor-parallel-size", "4",
+          "--dp-size", "2",
+          "--mem-fraction-static", "0.9",
           "--trust-remote-code",
-          "--disable-custom-all-reduce",
-          "--mem-fraction-static", "0.9"
+          "--chunked-prefill-size", "4096",
+          "--enable-ep-moe",
+          "--enable-flashinfer-mla",
         ]
         env:
         - name: NCCL_DEBUG
           value: "INFO"
-        - name: NCCL_IB_DISABLE
-          value: "1"
         - name: NCCL_P2P_DISABLE
+          value: "0"
+        - name: NCCL_P2P_LEVEL
+          value: "SYS"
+        - name: NCCL_IGNORE_DISABLED_P2P
           value: "1"
         ports:
         - name: http
@@ -58,11 +63,11 @@ spec:
           limits:
             cpu: "32"
             memory: 300G
-            nvidia.com/gpu: "4"
+            nvidia.com/gpu: "8"
           requests:
             cpu: "32"
             memory: 300G
-            nvidia.com/gpu: "4"
+            nvidia.com/gpu: "8"
         livenessProbe:
           httpGet:
             path: /health
