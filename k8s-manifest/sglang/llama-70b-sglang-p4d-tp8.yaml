@@ -44,38 +44,33 @@ spec:
           "--trust-remote-code",
           "--disable-custom-all-reduce",
           "--enable-p2p-check",
-        ] # original setting
+          "--enable-nccl-nvls",
+          "--enable-flashinfer-mla", 
+        ]
         env:
         - name: NCCL_DEBUG
           value: "INFO"
         - name: NCCL_P2P_DISABLE
           value: "0"
-        - name: NCCL_SHM_DISABLE
-          value: "1"
+        - name: NCCL_P2P_LEVEL
+          value: "NVL"
         - name: NCCL_NVLS_ENABLE
           value: "1"
         - name: NCCL_IGNORE_DISABLED_P2P
+          value: "1"
+        - name: NCCL_CUMEM_ENABLE
           value: "1"
         ports:
         - name: http
           containerPort: 8000
         resources:
           limits:
-            cpu: "32"
-            memory: 300G
+            cpu: "64"
+            memory: 1024G
+            ephemeral-storage: 1000Gi
             nvidia.com/gpu: "8"
-          requests:
-            cpu: "32"
-            memory: 300G
-            nvidia.com/gpu: "8"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 30
         readinessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 60
           periodSeconds: 5
@@ -87,24 +82,25 @@ spec:
       volumes:
       - name: cache-volume
         hostPath:
-          path: /tmp/deepseek
+          path: /mnt/k8s-disks/0/models/deepseek
           type: DirectoryOrCreate
       - name: shm
         emptyDir:
           medium: Memory
-          sizeLimit: "8Gi"
+          sizeLimit: "80Gi"
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: deepseek-svc-llama-70b-sglang
+  namespace: deepseek
 spec:
   selector:
     app: deepseek-llama-70b-sglang
     engine: sglang
   ports:
   - protocol: TCP
-    port: 80 # port on host
-    targetPort: http # port in container
+    port: 80
+    targetPort: http
   type: ClusterIP
