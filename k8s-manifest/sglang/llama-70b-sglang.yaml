@@ -40,9 +40,9 @@ spec:
           "--port", "8000",
           "--context-length", "32768",
           "--tensor-parallel-size", "4",
-          "--trust-remote-code",
+          "--mem-fraction-static", "0.9",
           "--disable-custom-all-reduce",
-          "--mem-fraction-static", "0.9"
+          "--trust-remote-code",
         ]
         env:
         - name: NCCL_DEBUG
@@ -51,6 +51,8 @@ spec:
           value: "1"
         - name: NCCL_P2P_DISABLE
           value: "1"
+        - name: NCCL_SHM_DISABLE
+          value: "0"
         ports:
         - name: http
           containerPort: 8000
@@ -59,21 +61,11 @@ spec:
             cpu: "32"
             memory: 300G
             nvidia.com/gpu: "4"
-          requests:
-            cpu: "32"
-            memory: 300G
-            nvidia.com/gpu: "4"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 60
         readinessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 60
-          periodSeconds: 5
+          periodSeconds: 10
         volumeMounts:
         - mountPath: /root/.cache/huggingface
           name: cache-volume
@@ -94,6 +86,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: deepseek-svc-llama-70b-sglang
+  namespace: deepseek
 spec:
   selector:
     app: deepseek-llama-70b-sglang
