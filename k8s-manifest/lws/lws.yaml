@@ -21,7 +21,7 @@ spec:
           effect: "NoSchedule"
         containers:
         - name: sglang-leader
-          image: docker.io/lmsysorg/sglang:latest
+          image: &common-image docker.io/lmsysorg/sglang:v0.4.7.post1-cu124
           imagePullPolicy: Always
           command: [ "python3", "-m", "sglang.launch_server" ]
           args: &common-args
@@ -127,7 +127,7 @@ spec:
         <<: *common-spec
         containers:
         - name: sglang-worker
-          image: docker.io/lmsysorg/sglang:latest
+          image: *common-image
           imagePullPolicy: Always
           command: [ "python3", "-m", "sglang.launch_server" ]
           args: *common-args

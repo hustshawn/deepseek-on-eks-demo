@@ -34,16 +34,15 @@ spec:
         image: docker.io/lmsysorg/sglang:latest
         imagePullPolicy: Always # IfNotPresent or Never
         command: [ "python3", "-m", "sglang.launch_server" ]
-        args: [
-          "--model-path", "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
-          "--host", "0.0.0.0",
-          "--port", "8000",
-          "--context-length", "32768",
-          "--tensor-parallel-size", "4",
-          "--mem-fraction-static", "0.9",
-          "--disable-custom-all-reduce",
-          "--trust-remote-code",
-        ]
+        args:
+        - "--model-path=deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+        - "--host=0.0.0.0"
+        - "--port=8000"
+        - "--context-length=32768"
+        - "--tensor-parallel-size=4"
+        - "--mem-fraction-static=0.9"
+        - "--disable-custom-all-reduce"
+        - "--trust-remote-code"
         env:
         - name: NCCL_DEBUG
           value: "INFO"
