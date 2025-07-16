@@ -1,9 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: qwen-32b-sglang
+  name: deepseek-qwen-32b-sglang
+  namespace: deepseek
   labels:
-    app: qwen-32b
+    app: deepseek-qwen-32b
     engine: sglang
 spec:
   replicas: 1
@@ -11,13 +12,13 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: qwen-32b-sglang
+      app: deepseek-qwen-32b-sglang
       engine: sglang
   template:
     metadata:
       labels:
-        app: qwen-32b-sglang
-        model: qwen-32b
+        app: deepseek-qwen-32b-sglang
+        model: deepseek-r1-distill-qwen-32b
         engine: sglang
     spec:
       priorityClassName: high-priority-100
@@ -29,17 +30,11 @@ spec:
         operator: "Exists"
         effect: "NoSchedule"
       containers:
-      - name: sglang
-        image: docker.io/lmsysorg/sglang:v0.4.7.post1-cu124
+      - name: deepsek
+        image: docker.io/lmsysorg/sglang:latest
         imagePullPolicy: Always # IfNotPresent or Never
         command: [ "python3", "-m", "sglang.launch_server" ]
-        args:
-        - "--model=Qwen/Qwen3-32B"
-        - "--host=0.0.0.0"
-        - "--port=8000"
-        - "--tensor-parallel-size=2"
-        - "--disable-custom-all-reduce"
-        - "--trust-remote-code"
+        args: [ "--model", "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", "--trust-remote-code", "--tp", "2", "--host", "0.0.0.0", "--port", "8000", "--disable-custom-all-reduce" ]
         ports:
         - name: http
           containerPort: 8000
@@ -77,10 +72,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: qwen-32b-sglang-svc
+  name: deepseek-svc-qwen-32b-sglang
 spec:
   selector:
-    app: qwen-32b-sglang
+    app: deepseek-qwen-32b-sglang
   ports:
   - protocol: TCP
     port: 80 # port on host
